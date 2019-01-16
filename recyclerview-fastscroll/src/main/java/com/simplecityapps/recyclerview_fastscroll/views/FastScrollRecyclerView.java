@@ -202,7 +202,8 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
      * Updates the scrollbar thumb offset to match the visible scroll of the recycler view.  It does
      * this by mapping the available scroll area of the recycler view to the available space for the
      * scroll bar.
-     *  @param scrollPosState the current scroll position
+     *
+     * @param scrollPosState the current scroll position
      * @param rowCount       the number of rows, used to calculate the total scroll height (assumes that
      */
     protected void updateThumbPosition(ScrollPositionState scrollPosState, int rowCount) {
@@ -277,7 +278,6 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
         } else {
             itemPos = findItemPosition(touchFraction);
             availableScrollHeight = getAvailableScrollHeight(rowCount * mScrollPosState.rowHeight, 0);
-
             //The exact position of our desired item
             int exactItemPos = (int) (availableScrollHeight * touchFraction);
 
@@ -304,17 +304,15 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
     private float findItemPosition(float touchFraction) {
 
         if (getAdapter() instanceof MeasurableAdapter) {
-            MeasurableAdapter measurer = (MeasurableAdapter) getAdapter();
             int viewTop = (int) (touchFraction * calculateAdapterHeight());
+            int top = calculateScrollDistanceToPosition(0);
+            int bottom = calculateScrollDistanceToPosition(getAdapter().getItemCount());
 
             for (int i = 0; i < getAdapter().getItemCount(); i++) {
-                int top = calculateScrollDistanceToPosition(i);
-                int bottom = top + measurer.getViewTypeHeight(this, getAdapter().getItemViewType(i));
                 if (viewTop >= top && viewTop <= bottom) {
                     return i;
                 }
             }
-
             // Should never happen
             Log.w(TAG, "Failed to find a view at the provided scroll fraction (" + touchFraction + ")");
             return touchFraction * getAdapter().getItemCount();
@@ -331,7 +329,6 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
         if (getAdapter() == null) {
             return;
         }
-
         int rowCount = getAdapter().getItemCount();
         if (getLayoutManager() instanceof GridLayoutManager) {
             int spanCount = ((GridLayoutManager) getLayoutManager()).getSpanCount();
@@ -398,16 +395,30 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
 
         int totalHeight = 0;
         MeasurableAdapter measurer = (MeasurableAdapter) getAdapter();
-
-        // TODO Take grid layouts into account
-
-        for (int i = 0; i < adapterIndex; i++) {
-            mScrollOffsets.put(i, totalHeight);
-            int viewType = getAdapter().getItemViewType(i);
-            totalHeight += measurer.getViewTypeHeight(this, viewType);
+        if (getLayoutManager() instanceof GridLayoutManager) {
+            // Grid
+            int rowCount;
+            int spanCount = ((GridLayoutManager) getLayoutManager()).getSpanCount();
+            if (adapterIndex % spanCount != 0) {
+                rowCount = (int) Math.ceil((double) adapterIndex / spanCount) + (spanCount + adapterIndex % spanCount);
+            } else {
+                rowCount = (int) Math.ceil((double) adapterIndex / spanCount);
+            }
+            for (int i = 0; i < rowCount; i++) {
+                mScrollOffsets.put(i, totalHeight);
+                int viewType = getAdapter().getItemViewType(i);
+                totalHeight += measurer.getViewTypeHeight(this, viewType);
+            }
+            mScrollOffsets.put(rowCount, totalHeight);
+        } else {
+            // Linear
+            for (int i = 0; i < adapterIndex; i++) {
+                mScrollOffsets.put(i, totalHeight);
+                int viewType = getAdapter().getItemViewType(i);
+                totalHeight += measurer.getViewTypeHeight(this, viewType);
+            }
+            mScrollOffsets.put(adapterIndex, totalHeight);
         }
-
-        mScrollOffsets.put(adapterIndex, totalHeight);
         return totalHeight;
     }
 
@@ -527,8 +538,9 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
     public interface MeasurableAdapter {
         /**
          * Gets the height of a specific view type, including item decorations
+         *
          * @param recyclerView The recyclerView that this item view will be placed in
-         * @param viewType The view type to get the height of
+         * @param viewType     The view type to get the height of
          * @return The height of a single view for the given view type in pixels
          */
         int getViewTypeHeight(RecyclerView recyclerView, int viewType);

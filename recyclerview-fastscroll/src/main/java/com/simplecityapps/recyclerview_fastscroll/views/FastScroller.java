@@ -355,6 +355,11 @@ public class FastScroller {
         mRecyclerView.invalidate(mInvalidateRect);
     }
 
+    public void setTrackColor(@ColorInt int color) {
+        if (mTrack != null) mTrack.setColor(color);
+        mRecyclerView.invalidate(mInvalidateRect);
+    }
+
     public void setPopupBgColor(@ColorInt int color) {
         if (mTrack != null) mTrack.setColor(color);
         mPopup.setBgColor(color);

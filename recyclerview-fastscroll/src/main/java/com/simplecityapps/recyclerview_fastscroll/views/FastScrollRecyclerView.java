@@ -374,7 +374,6 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
         }
 
         View child = getChildAt(0);
-
         // don't do anything if we have a header item
         if (child.getHeight() < getLayoutManager().getChildAt(1).getHeight()) { // identify header
             stateOut.rowHeight = lastRowHeight;
@@ -382,9 +381,7 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
             stateOut.rowTopOffset = lastTopOffset;
             return;
         }
-
         stateOut.rowIndex = getChildAdapterPosition(child);
-
         if (getLayoutManager() instanceof GridLayoutManager) {
             stateOut.rowIndex = stateOut.rowIndex / ((GridLayoutManager) getLayoutManager()).getSpanCount();
         }

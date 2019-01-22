@@ -202,7 +202,8 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
      * Updates the scrollbar thumb offset to match the visible scroll of the recycler view.  It does
      * this by mapping the available scroll area of the recycler view to the available space for the
      * scroll bar.
-     *  @param scrollPosState the current scroll position
+     *
+     * @param scrollPosState the current scroll position
      * @param rowCount       the number of rows, used to calculate the total scroll height (assumes that
      */
     protected void updateThumbPosition(ScrollPositionState scrollPosState, int rowCount) {
@@ -356,6 +357,10 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
     /**
      * Returns the current scroll state of the apps rows.
      */
+    private int lastRowIndex;
+    private int lastTopOffset;
+    private int lastRowHeight;
+
     private void getCurScrollState(ScrollPositionState stateOut) {
         stateOut.rowIndex = -1;
         stateOut.rowTopOffset = -1;
@@ -369,14 +374,30 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
         }
 
         View child = getChildAt(0);
-
         stateOut.rowIndex = getChildAdapterPosition(child);
+
+        // don't do anything if we have a header item
+        if (getLayoutManager().getChildAt(0).getHeight() < getLayoutManager().getChildAt(1).getHeight()) { // identify header
+            stateOut.rowHeight = lastRowHeight;
+            stateOut.rowIndex = lastRowIndex;
+            stateOut.rowTopOffset = lastTopOffset;
+            return;
+        }
+
         if (getLayoutManager() instanceof GridLayoutManager) {
             stateOut.rowIndex = stateOut.rowIndex / ((GridLayoutManager) getLayoutManager()).getSpanCount();
         }
         stateOut.rowTopOffset = getLayoutManager().getDecoratedTop(child);
-        stateOut.rowHeight = child.getHeight() + getLayoutManager().getTopDecorationHeight(child)
-                + getLayoutManager().getBottomDecorationHeight(child);
+        // this line here will guarantee us to have consistant height for the child
+        // we also dont need to worry about null pointer exception, since we will always have
+        // child at 1 or 0 here.
+        stateOut.rowHeight = getLayoutManager().getChildAt(0).getHeight()
+                > getLayoutManager().getChildAt(1).getHeight()
+                ? getLayoutManager().getChildAt(0).getHeight()
+                : getLayoutManager().getChildAt(1).getHeight();
+        lastRowHeight = stateOut.rowHeight;
+        lastTopOffset = stateOut.rowTopOffset;
+        lastRowIndex = stateOut.rowIndex;
     }
 
     /**
@@ -527,8 +548,9 @@ public class FastScrollRecyclerView extends RecyclerView implements RecyclerView
     public interface MeasurableAdapter {
         /**
          * Gets the height of a specific view type, including item decorations
+         *
          * @param recyclerView The recyclerView that this item view will be placed in
-         * @param viewType The view type to get the height of
+         * @param viewType     The view type to get the height of
          * @return The height of a single view for the given view type in pixels
          */
         int getViewTypeHeight(RecyclerView recyclerView, int viewType);

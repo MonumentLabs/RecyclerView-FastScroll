@@ -52,8 +52,7 @@ public class Utils {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static boolean isRtl(Resources res) {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) &&
-                (res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
+        return res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
     }
 
     public static Bitmap drawableToBitmap(Drawable drawable) {

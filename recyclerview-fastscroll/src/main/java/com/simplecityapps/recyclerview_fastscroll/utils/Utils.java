@@ -18,10 +18,6 @@ package com.simplecityapps.recyclerview_fastscroll.utils;
 
 import android.annotation.TargetApi;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.View;
@@ -54,19 +50,5 @@ public class Utils {
     public static boolean isRtl(Resources res) {
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) &&
                 (res.getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
-    }
-
-    public static Bitmap drawableToBitmap(Drawable drawable) {
-
-        if (drawable instanceof BitmapDrawable) {
-            return ((BitmapDrawable) drawable).getBitmap();
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        return bitmap;
     }
 }

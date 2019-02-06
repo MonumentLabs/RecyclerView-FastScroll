@@ -60,7 +60,8 @@ public class FastScrollPopup {
     private ObjectAnimator mAlphaAnimator;
     private boolean mVisible;
 
-    @FastScroller.FastScrollerPopupPosition private int mPosition;
+    @FastScroller.FastScrollerPopupPosition
+    private int mPosition;
 
     FastScrollPopup(Resources resources, FastScrollRecyclerView recyclerView) {
 
@@ -155,7 +156,7 @@ public class FastScrollPopup {
     public void draw(Canvas canvas) {
         if (isVisible()) {
             // Draw the fast scroller popup
-            int restoreCount = canvas.save(Canvas.MATRIX_SAVE_FLAG);
+            int restoreCount = canvas.save(Canvas.ALL_SAVE_FLAG);
             canvas.translate(mBgBounds.left, mBgBounds.top);
             mTmpRect.set(mBgBounds);
             mTmpRect.offsetTo(0, 0);
